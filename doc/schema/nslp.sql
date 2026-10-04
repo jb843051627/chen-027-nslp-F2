@@ -38,15 +38,37 @@ CREATE TABLE IF NOT EXISTS t_nslp_doc_tpl (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='执法文书模板与版次';
 
+CREATE TABLE IF NOT EXISTS t_nslp_flow_batch (
+  id bigint NOT NULL COMMENT '主键',
+  batch_no varchar(64) DEFAULT NULL COMMENT '监测流水批次码（一拨一码；同一码第二回到达只照面，不另起一拨）',
+  cap_num int DEFAULT NULL COMMENT '写定的顶（抬头那一格空着/填负/填得离谱，一律按300认后落库，只此一处来源）',
+  row_num int DEFAULT NULL COMMENT '进门点出来的行数（事后翻得出来当初点了几行）',
+  parse_kind varchar(16) DEFAULT NULL COMMENT '本拨切法 DELIMITER按分隔符／FIXED按定宽（一拨之内只许一种）',
+  status int DEFAULT NULL COMMENT '拨落地情形 0已核收 1超顶整批未收',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='监测流水核收拨抬头';
+
 CREATE TABLE IF NOT EXISTS t_nslp_flow_row (
   id bigint NOT NULL COMMENT '主键',
   batch_no varchar(64) DEFAULT NULL COMMENT '监测流水批次码',
-  row_no int DEFAULT NULL COMMENT '原报行次',
+  row_no int DEFAULT NULL COMMENT '原报行次（系统在本拨内排，不留手填格子；退回重报仍显示当初那一个行次）',
   item_code varchar(64) DEFAULT NULL COMMENT '被对上的点位码',
   qty decimal(12,2) DEFAULT NULL COMMENT '本行读数次数',
   chk_num decimal(12,2) DEFAULT NULL COMMENT '本行达标次数',
   put_kind varchar(32) DEFAULT NULL COMMENT '来路（自动站直采／监测车补报两条来路）',
-  status int DEFAULT NULL COMMENT '行落地情形 0未勾 1已收下 2已退回',
+  status int DEFAULT NULL COMMENT '行落地情形 0未勾 1已收下 2已退回（第四种写法不许落库）',
+  ret_reason varchar(255) DEFAULT NULL COMMENT '退回理由（吃了哪一条，一句一句问得出）；未退空白',
+  parse_flag int DEFAULT '0' COMMENT '解析情形 0切得动 1切不动（单独标出递给回核看的人，不按住整拨）',
+  reg_diff_flag int DEFAULT '0' COMMENT '底册比对 0相符或未报 1不合（以底册为准，回执单列）',
+  point_name varchar(128) DEFAULT NULL COMMENT '点位题名（以点位底册带出的为准，报文那串只拿来比对）',
+  zone_no varchar(64) DEFAULT NULL COMMENT '区册代号（以点位底册带出的为准）',
+  layer_flag int DEFAULT '0' COMMENT '册层 0现行 1历史（未勾连满两个年度转入历史册层，只此一处挪动）',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
   create_by varchar(64) DEFAULT NULL COMMENT '创建者',
   create_time datetime DEFAULT NULL COMMENT '创建时间',

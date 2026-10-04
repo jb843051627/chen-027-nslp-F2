@@ -62,10 +62,40 @@ public class TNslpFlowRow implements Serializable {
     @ApiModelProperty(value = "来路（自动站直采／监测车补报两条来路）")
     private String putKind;
 
-    /** 行落地情形 0未勾 1已收下 2已退回 */
+    /** 行落地情形 0未勾 1已收下 2已退回（第四种写法不许落库） */
     @TableField("status")
     @ApiModelProperty(value = "行落地情形 0未勾 1已收下 2已退回")
     private Integer status;
+
+    /** 退回理由（吃了哪一条，一句一句问得出）；未退空白 */
+    @TableField("ret_reason")
+    @ApiModelProperty(value = "退回理由，未退空白")
+    private String retReason;
+
+    /** 解析情形 0切得动 1切不动（单独标出递给回核看的人，不按住整拨） */
+    @TableField("parse_flag")
+    @ApiModelProperty(value = "解析情形 0切得动 1切不动")
+    private Integer parseFlag;
+
+    /** 底册比对 0相符或未报 1不合（以底册为准，回执单列） */
+    @TableField("reg_diff_flag")
+    @ApiModelProperty(value = "底册比对 0相符或未报 1不合")
+    private Integer regDiffFlag;
+
+    /** 点位题名（以点位底册带出的为准，报文那串只拿来比对） */
+    @TableField("point_name")
+    @ApiModelProperty(value = "点位题名（以底册带出为准）")
+    private String pointName;
+
+    /** 区册代号（以点位底册带出的为准） */
+    @TableField("zone_no")
+    @ApiModelProperty(value = "区册代号（以底册带出为准）")
+    private String zoneNo;
+
+    /** 册层 0现行 1历史（未勾连满两个年度转入历史册层，只此一处挪动） */
+    @TableField("layer_flag")
+    @ApiModelProperty(value = "册层 0现行 1历史")
+    private Integer layerFlag;
 
     /** 删除标记 0正常 1删除 */
     @TableField("del_flag")
@@ -161,6 +191,54 @@ public class TNslpFlowRow implements Serializable {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public String getRetReason() {
+        return retReason;
+    }
+
+    public void setRetReason(String retReason) {
+        this.retReason = retReason;
+    }
+
+    public Integer getParseFlag() {
+        return parseFlag;
+    }
+
+    public void setParseFlag(Integer parseFlag) {
+        this.parseFlag = parseFlag;
+    }
+
+    public Integer getRegDiffFlag() {
+        return regDiffFlag;
+    }
+
+    public void setRegDiffFlag(Integer regDiffFlag) {
+        this.regDiffFlag = regDiffFlag;
+    }
+
+    public String getPointName() {
+        return pointName;
+    }
+
+    public void setPointName(String pointName) {
+        this.pointName = pointName;
+    }
+
+    public String getZoneNo() {
+        return zoneNo;
+    }
+
+    public void setZoneNo(String zoneNo) {
+        this.zoneNo = zoneNo;
+    }
+
+    public Integer getLayerFlag() {
+        return layerFlag;
+    }
+
+    public void setLayerFlag(Integer layerFlag) {
+        this.layerFlag = layerFlag;
     }
 
     public Integer getDelFlag() {

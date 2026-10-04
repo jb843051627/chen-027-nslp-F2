@@ -37,17 +37,22 @@ public class TNslpFlowRow implements Serializable {
     @ApiModelProperty(value = "监测流水批次码")
     private String batchNo;
 
-    /** 原报行次 */
+    /** 本拨内行次（系统在本拨内排，不留手填格；被退的行重报仍显原行次） */
     @TableField("row_no")
-    @ApiModelProperty(value = "原报行次")
+    @ApiModelProperty(value = "本拨内行次")
     private Integer rowNo;
 
-    /** 被对上的点位码 */
+    /** 本行随该批次码第几遍落地 1首遍 2照面里的新行 */
+    @TableField("arrive_seq")
+    @ApiModelProperty(value = "随批次码第几遍落地")
+    private Integer arriveSeq;
+
+    /** 被对上的点位码（只认码，题名近似凑数不认） */
     @TableField("item_code")
     @ApiModelProperty(value = "被对上的点位码")
     private String itemCode;
 
-    /** 本行读数次数 */
+    /** 本行读数次数（与达标次数一起到） */
     @TableField("qty")
     @ApiModelProperty(value = "本行读数次数")
     private BigDecimal qty;
@@ -57,15 +62,66 @@ public class TNslpFlowRow implements Serializable {
     @ApiModelProperty(value = "本行达标次数")
     private BigDecimal chkNum;
 
-    /** 来路（自动站直采／监测车补报两条来路） */
+    /** 两数没一起到 0齐 1缺 */
+    @TableField("miss_data")
+    @ApiModelProperty(value = "两数没一起到 0齐 1缺")
+    private Integer missData;
+
+    /** 报文里那串读数原文 */
+    @TableField("payload")
+    @ApiModelProperty(value = "报文读数串原文")
+    private String payload;
+
+    /** 报文切不动标记 0切得动 1切不动（单行标出递给回核，不按整拨） */
+    @TableField("parse_fail")
+    @ApiModelProperty(value = "报文切不动 0否 1是")
+    private Integer parseFail;
+
+    /** 来路（自动站直采／监测车补报两条来路，各定各的去处） */
     @TableField("put_kind")
     @ApiModelProperty(value = "来路（自动站直采／监测车补报两条来路）")
     private String putKind;
 
-    /** 行落地情形 0未勾 1已收下 2已退回 */
+    /** 报文带出的点位题名（只拿来与底册比对） */
+    @TableField("raw_title")
+    @ApiModelProperty(value = "报文点位题名")
+    private String rawTitle;
+
+    /** 报文带出的区册代号（只拿来与底册比对） */
+    @TableField("raw_zone_no")
+    @ApiModelProperty(value = "报文区册代号")
+    private String rawZoneNo;
+
+    /** 报文与点位底册不合 0合 1不合（以底册为准，回执单列） */
+    @TableField("book_mismatch")
+    @ApiModelProperty(value = "报文与底册不合 0合 1不合")
+    private Integer bookMismatch;
+
+    /** 行落地情形 0未勾 1已收下 2已退回（第四种不许落库；新拨只落1/2，0只存量里有） */
     @TableField("status")
     @ApiModelProperty(value = "行落地情形 0未勾 1已收下 2已退回")
     private Integer status;
+
+    /** 退回吃了哪几条（码值逗号相连，一句句问得出） */
+    @TableField("reject_code")
+    @ApiModelProperty(value = "退回条款码")
+    private String rejectCode;
+
+    /** 退回写明为哪一条退（多条句句相连） */
+    @TableField("reject_reason")
+    @ApiModelProperty(value = "退回理由")
+    private String rejectReason;
+
+    /** 册层 0现行名单 1历史册层（未勾满两年度转入，不删行） */
+    @TableField("layer")
+    @ApiModelProperty(value = "册层 0现行 1历史")
+    private Integer layer;
+
+    /** 转入历史册层那一一日 */
+    @TableField("layer_at")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ApiModelProperty(value = "转入历史册层那一一日")
+    private Date layerAt;
 
     /** 删除标记 0正常 1删除 */
     @TableField("del_flag")
@@ -123,6 +179,14 @@ public class TNslpFlowRow implements Serializable {
         this.rowNo = rowNo;
     }
 
+    public Integer getArriveSeq() {
+        return arriveSeq;
+    }
+
+    public void setArriveSeq(Integer arriveSeq) {
+        this.arriveSeq = arriveSeq;
+    }
+
     public String getItemCode() {
         return itemCode;
     }
@@ -147,6 +211,30 @@ public class TNslpFlowRow implements Serializable {
         this.chkNum = chkNum;
     }
 
+    public Integer getMissData() {
+        return missData;
+    }
+
+    public void setMissData(Integer missData) {
+        this.missData = missData;
+    }
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
+    public Integer getParseFail() {
+        return parseFail;
+    }
+
+    public void setParseFail(Integer parseFail) {
+        this.parseFail = parseFail;
+    }
+
     public String getPutKind() {
         return putKind;
     }
@@ -155,12 +243,68 @@ public class TNslpFlowRow implements Serializable {
         this.putKind = putKind;
     }
 
+    public String getRawTitle() {
+        return rawTitle;
+    }
+
+    public void setRawTitle(String rawTitle) {
+        this.rawTitle = rawTitle;
+    }
+
+    public String getRawZoneNo() {
+        return rawZoneNo;
+    }
+
+    public void setRawZoneNo(String rawZoneNo) {
+        this.rawZoneNo = rawZoneNo;
+    }
+
+    public Integer getBookMismatch() {
+        return bookMismatch;
+    }
+
+    public void setBookMismatch(Integer bookMismatch) {
+        this.bookMismatch = bookMismatch;
+    }
+
     public Integer getStatus() {
         return status;
     }
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public String getRejectCode() {
+        return rejectCode;
+    }
+
+    public void setRejectCode(String rejectCode) {
+        this.rejectCode = rejectCode;
+    }
+
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+
+    public Integer getLayer() {
+        return layer;
+    }
+
+    public void setLayer(Integer layer) {
+        this.layer = layer;
+    }
+
+    public Date getLayerAt() {
+        return layerAt;
+    }
+
+    public void setLayerAt(Date layerAt) {
+        this.layerAt = layerAt;
     }
 
     public Integer getDelFlag() {

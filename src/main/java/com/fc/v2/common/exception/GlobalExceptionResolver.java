@@ -108,6 +108,15 @@ public class GlobalExceptionResolver{
     {
         return AjaxResult.error("演示模式，不允许操作");
     }
+
+    /**
+     * 流水核收进门不合法（拨形不成、顶破、切法混用）：整拨不落地，回一句能交代的话
+     */
+    @ExceptionHandler(FlowReceiveException.class)
+    public AjaxResult flowReceiveException(FlowReceiveException e)
+    {
+        return AjaxResult.error(e.getMessage());
+    }
     
     /**
      * 拦截未知的运行时异常

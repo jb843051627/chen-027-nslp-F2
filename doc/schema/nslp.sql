@@ -38,21 +38,50 @@ CREATE TABLE IF NOT EXISTS t_nslp_doc_tpl (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='执法文书模板与版次';
 
-CREATE TABLE IF NOT EXISTS t_nslp_flow_row (
+CREATE TABLE IF NOT EXISTS t_nslp_flow_batch (
   id bigint NOT NULL COMMENT '主键',
-  batch_no varchar(64) DEFAULT NULL COMMENT '监测流水批次码',
-  row_no int DEFAULT NULL COMMENT '原报行次',
-  item_code varchar(64) DEFAULT NULL COMMENT '被对上的点位码',
-  qty decimal(12,2) DEFAULT NULL COMMENT '本行读数次数',
-  chk_num decimal(12,2) DEFAULT NULL COMMENT '本行达标次数',
-  put_kind varchar(32) DEFAULT NULL COMMENT '来路（自动站直采／监测车补报两条来路）',
-  status int DEFAULT NULL COMMENT '行落地情形 0未勾 1已收下 2已退回',
+  batch_no varchar(64) DEFAULT NULL COMMENT '批次码（一拨一个，重码到达只算照面，不另起一拨）',
+  cap_num int DEFAULT NULL COMMENT '拨抬头写定的顶（空着/负数/离谱大数按300认；顶只此一处，别无第二来源）',
+  first_count int DEFAULT NULL COMMENT '进门首遍点出来的行数（事后翻得出当初点了几行）',
+  arrive_seq int DEFAULT NULL COMMENT '该批次码落到流水上第几遍 1首遍 2照面',
+  cut_kind varchar(16) DEFAULT NULL COMMENT '本报文切法 delimiter按分隔符 fixed按定宽（一拨之内只许一种）',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
   create_by varchar(64) DEFAULT NULL COMMENT '创建者',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   update_by varchar(64) DEFAULT NULL COMMENT '更新者',
   update_time datetime DEFAULT NULL COMMENT '更新时间',
   remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_nslp_flow_batch_no (batch_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='监测流水核收拨抬头（一拨一抬头）';
+
+CREATE TABLE IF NOT EXISTS t_nslp_flow_row (
+  id bigint NOT NULL COMMENT '主键',
+  batch_no varchar(64) DEFAULT NULL COMMENT '监测流水批次码',
+  row_no int DEFAULT NULL COMMENT '本拨内行次（系统在本拨内排，不留手填格；重报仍显原行次）',
+  arrive_seq int DEFAULT NULL COMMENT '本行随该批次码第几遍落地 1首遍 2照面里的新行',
+  item_code varchar(64) DEFAULT NULL COMMENT '被对上的点位码（只认码，题名凑数不认）',
+  qty decimal(12,2) DEFAULT NULL COMMENT '本行读数次数（与达标次数一起到，缺则空挂不代填不当0）',
+  chk_num decimal(12,2) DEFAULT NULL COMMENT '本行达标次数（与读数次数一起到）',
+  miss_data int DEFAULT '0' COMMENT '两数没一起到 0齐 1缺（缺不代填、不当0收下）',
+  payload varchar(1000) DEFAULT NULL COMMENT '报文里那串读数原文',
+  parse_fail int DEFAULT '0' COMMENT '报文切不动标记 0切得动 1切不动（单行标出递给回核，不按整拨）',
+  put_kind varchar(32) DEFAULT NULL COMMENT '来路（自动站直采／监测车补报两条来路，各定各的去处）',
+  raw_title varchar(128) DEFAULT NULL COMMENT '报文带出的点位题名（只拿来与底册比对）',
+  raw_zone_no varchar(64) DEFAULT NULL COMMENT '报文带出的区册代号（只拿来与底册比对）',
+  book_mismatch int DEFAULT '0' COMMENT '报文与点位底册不合 0合 1不合（以底册为准，回执单列）',
+  status int DEFAULT NULL COMMENT '行落地情形 0未勾 1已收下 2已退回（第四种不许落库；新拨只落1/2，0只存量里有）',
+  reject_code varchar(256) DEFAULT NULL COMMENT '退回吃了哪几条（码值逗号相连，一句句问得出）',
+  reject_reason varchar(1000) DEFAULT NULL COMMENT '退回写明为哪一条退（多条句句相连）',
+  layer int DEFAULT '0' COMMENT '册层 0现行名单 1历史册层（未勾满两年度转入，不删行）',
+  layer_at datetime DEFAULT NULL COMMENT '转入历史册层那一一日',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  KEY idx_nslp_flow_row_batch (batch_no),
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='监测流水核收行';
 
